@@ -1,14 +1,11 @@
 #include <stdio.h>
-#include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #define MAX_LINE 80
 #define true 1
 #define false 0
-#define PIPE_BUFFER 1024*1024*1024
 
 int main(){
 	char *args[MAX_LINE/2+1];
@@ -44,10 +41,9 @@ int main(){
             i--;
         }
         args[i]=NULL;
-
         if (!strcmp(args[0],"fg")){wait(NULL);}
         if (!strcmp(args[0],"exit")){
-            return 0;
+            exit(0);
         }
         if (!strcmp("cd",args[0])){
             chdir(args[1]);
@@ -60,7 +56,9 @@ int main(){
                     perror("open");
                 }
                 dup2(filed,1);
-                execvp(args[0],args);
+                if ((execvp(args[0],args))==-1){
+                    exit(0);
+                }
             }
             else if (piped){
                 int fd[3];
@@ -69,17 +67,23 @@ int main(){
                 if (pid==0){
                     dup2(fd[1],1);
                     close(fd[0]);
-                    execvp(args[0],args);
+                    if ((execvp(args[0],args))==-1){
+                        exit(0);
+                    }
                 }
                 else{
                     char *p=&args[index+1];
                     dup2(fd[0],0);
                     close(fd[1]);
-                    execvp(args[index+1],p);
+                    if ((execvp(args[index+1],p))==-1){
+                        exit(0);
+                    }
                 }
             }
             else{
-                execvp(args[0],args);
+                if ((execvp(args[0],args))==-1){
+                    exit(0);
+                }
             }
 		}
         else{
@@ -90,6 +94,6 @@ int main(){
                 printf("& (PID: %d)\n",pid);
             }
         }
+        fflush(stdout);
 	}
-    fflush(stdout);
 }
