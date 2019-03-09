@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -48,7 +49,9 @@ int main(){
             exit(0);
         }
         if (!strcmp("cd",args[0])){
-            chdir(args[1]);
+            if (chdir(args[1])==-1){
+                printf("%s\n",strerror(errno));
+            }
             continue;
         }
 		if ((pid=fork())==0){
@@ -59,6 +62,7 @@ int main(){
                 }
                 dup2(filed,1);
                 if ((execvp(args[0],args))==-1){
+                    printf("%s\n",strerror(errno));
                     exit(0);
                 }
             }
@@ -70,6 +74,7 @@ int main(){
                     dup2(fd[1],1);
                     close(fd[0]);
                     if ((execvp(args[0],args))==-1){
+                        printf("%s\n",strerror(errno));
                         exit(0);
                     }
                 }
@@ -78,12 +83,14 @@ int main(){
                     dup2(fd[0],0);
                     close(fd[1]);
                     if ((execvp(args[index+1],p))==-1){
+                        printf("%s\n",strerror(errno));
                         exit(0);
                     }
                 }
             }
             else{
                 if ((execvp(args[0],args))==-1){
+                    printf("%s\n",strerror(errno));
                     exit(0);
                 }
             }
