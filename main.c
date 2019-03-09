@@ -11,13 +11,15 @@ int main(){
 	char *args[MAX_LINE/2+1];
 	while (1){
         char in[256];
+        char cwd[256];
         int bg=false;
         pid_t pid;
         int piped=false;
         int index;
         int redirect=false;
-
-		printf("shell> ");
+        
+        getcwd(cwd,256);
+		printf("%s> ",cwd);
         fgets(in,MAX_LINE,stdin);
         int i=0;
         char* tok=strtok(in," ");
